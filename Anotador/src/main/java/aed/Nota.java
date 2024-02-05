@@ -1,9 +1,7 @@
 package aed;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -13,13 +11,10 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
-import java.util.List;
 
-import org.jsoup.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 
@@ -178,6 +173,38 @@ public class Nota {
             // Agrega el nuevo div al cuerpo del documento
             body.appendChild(nuevoDiv);
     
+            // Actualiza el contenido del archivo
+            FileWriter escritor = new FileWriter(nota.getPath(), false);
+            BufferedWriter bufferEscritor = new BufferedWriter(escritor);
+            bufferEscritor.write(document.html());
+            bufferEscritor.close();
+        } catch (IOException e) {
+            System.out.println("Error al escribir en el archivo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void agregarImagen(String imagePath) {
+        try {
+            Document document = Jsoup.parse(nota, "UTF-8");
+            Element body = document.body();
+
+            // Encuentra el último div de imágenes
+            Elements divsImagen = body.select("div[id^=imagen_]");
+            int divCount = divsImagen.size();
+
+            // Crea un nuevo div de imagen con un id único
+            Element nuevoDivImagen = new Element("div");
+            nuevoDivImagen.attr("id", "imagen_" + (divCount + 1));
+
+            // Agrega la imagen al nuevo div
+            Element imagen = new Element("img");
+            imagen.attr("src", imagePath);
+            nuevoDivImagen.appendChild(imagen);
+
+            // Agrega el nuevo div de imagen al cuerpo del documento
+            body.appendChild(nuevoDivImagen);
+
             // Actualiza el contenido del archivo
             FileWriter escritor = new FileWriter(nota.getPath(), false);
             BufferedWriter bufferEscritor = new BufferedWriter(escritor);

@@ -7,11 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
@@ -19,22 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javafx.scene.shape.Path;
-
 public class NotaTest {
-    private String leerContenidoArchivo(String rutaArchivo) {
-        StringBuilder contenido = new StringBuilder();
-        try (BufferedReader lector = new BufferedReader(new FileReader(rutaArchivo))) {
-            String linea;
-            while ((linea = lector.readLine()) != null) {
-                contenido.append(linea).append(System.lineSeparator());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contenido.toString().trim(); // Eliminamos cualquier espacio en blanco adicional al final
-    }
-
 
     private Nota nota;
 
@@ -83,7 +65,7 @@ public class NotaTest {
     public void testEscribirEnArchivo() {
         String contenido = "Este es un texto de prueba";
         nota.anotar(contenido);
-        String contenidoLeido = nota.getContenido();
+        String contenidoLeido = nota.getContenidoHTML();
     
         // Verifica que el contenidoLeido contiene el texto original
         assertTrue(contenidoLeido.contains(contenido));
@@ -93,7 +75,7 @@ public class NotaTest {
     public void testGetContenido() {
         String contenido = "Este es un texto de prueba";
         nota.anotar(contenido);
-        String contenidoLeidoMetodo = nota.getContenido();
+        String contenidoLeidoMetodo = nota.getContenidoHTML();
     
         // Verifica que el contenidoLeidoMetodo contiene el texto original
         assertTrue(contenidoLeidoMetodo.contains(contenido));
@@ -125,7 +107,7 @@ public class NotaTest {
         String contenidoAdicional = "Contenido adicional";
         nota.anotar(contenidoAdicional);
 
-        String contenidoObtenido = nota.getContenido();
+        String contenidoObtenido = nota.getContenidoHTML();
         assertTrue(contenidoObtenido.contains(contenidoInicial), "El contenido inicial debería estar presente");
         assertTrue(contenidoObtenido.contains(contenidoAdicional), "El contenido adicional debería estar presente");
     }
@@ -139,12 +121,12 @@ public class NotaTest {
 
     @Test
     void testGetContenidoArchivoVacio() throws IOException {
-        assertEquals("", nota.getContenido(),
+        assertEquals("", nota.getContenidoHTML(),
                 "El contenido debería ser una cadena vacía para un archivo vacío");
 
         String contenido = "Este es un contenido de prueba";
         nota.anotar(contenido);
-        String contenidoObtenido = nota.getContenido();
+        String contenidoObtenido = nota.getContenidoHTML();
         assertTrue(contenidoObtenido.contains(contenido), "El contenido adicional debería estar presente");
         
     }
@@ -175,6 +157,48 @@ public class NotaTest {
     void testGetHeadArchivoInexistente() {
         nota.borrar();
         assertEquals("", nota.getHeadHTML(), "El contenido debería ser una cadena vacía para un archivo inexistente");
+    }
+
+    @Test
+    void testAgregarImagen() {
+        // Ruta de la imagen que utilizarás para el test
+        String imagePath = "/ruta/de/tu/imagen.jpg";
+
+        // Llamar al método agregarImagen
+        nota.agregarImagen(imagePath);
+
+        // Obtener el contenido actualizado de la nota
+        String contenidoActualizado = nota.getContenidoHTML();
+
+        // Verificar si el contenido contiene el div de imagen esperado
+        assertTrue(contenidoActualizado.contains("<div id=\"imagen_1\">\n <img src=\"/ruta/de/tu/imagen.jpg\">\n</div>"));
+    }
+    @Test
+    void testMuchoTexto(){
+        String texto = "hola soy el texto numero: ";
+        String salidaEsperada = "";
+        for (int i = 0; i < 20; i++) {
+            nota.anotar(texto+Integer.toString(i+1));
+            salidaEsperada = salidaEsperada + "<div id=\"div_contenido_"+Integer.toString(i+1)+"\">\n <p>" + texto + Integer.toString(i+1)+"</p>\n</div>\n";
+        }
+        if (salidaEsperada.endsWith("\n")) {
+            salidaEsperada = salidaEsperada.substring(0, salidaEsperada.length() - 1);
+        }
+        assertEquals(nota.getContenidoHTML(), salidaEsperada);
+    }
+
+    @Test
+    void testMuchasImagenes(){
+        String texto = "hola soy la imagen numero: ";
+        String salidaEsperada = "";
+        for (int i = 0; i < 20; i++) {
+            nota.agregarImagen(texto+Integer.toString(i+1));;
+            salidaEsperada = salidaEsperada + "<div id=\"imagen_"+Integer.toString(i+1)+"\">\n <img src=\""+texto+Integer.toString(i+1)+"\">\n</div>\n";
+        }
+        if (salidaEsperada.endsWith("\n")) {
+            salidaEsperada = salidaEsperada.substring(0, salidaEsperada.length() - 1);
+        }
+        assertEquals(nota.getContenidoHTML(), salidaEsperada);
     }
 }
 
