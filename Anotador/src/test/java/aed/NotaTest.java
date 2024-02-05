@@ -161,7 +161,20 @@ public class NotaTest {
     @Test
     void testGetContenidoArchivoInexistente() {
         nota.borrar();
-        assertEquals("", nota.getContenido(), "El contenido debería ser una cadena vacía para un archivo inexistente");
+        assertEquals("", nota.getContenidoHTML(), "El contenido debería ser una cadena vacía para un archivo inexistente");
+    }
+
+    @Test
+    void testGetHead(){
+        String contenidoEsperado = "<title>Nota: MiTitulo.html</title>";
+        String leido = nota.getHeadHTML();
+        assertEquals(contenidoEsperado, leido);
+    }
+
+    @Test
+    void testGetHeadArchivoInexistente() {
+        nota.borrar();
+        assertEquals("", nota.getHeadHTML(), "El contenido debería ser una cadena vacía para un archivo inexistente");
     }
 }
 

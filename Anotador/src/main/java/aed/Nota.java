@@ -238,15 +238,20 @@ public class Nota {
         return contenido.toString();
     }
 
-    public static String extraerTexto(String inputHtml) {
-        Document document = Jsoup.parseBodyFragment(inputHtml);
-
-        Element body = document.body();
-        return body.text();
-    }
-
-    public String getContenido() {
-        String contenido = getContenidoHTML();
-        return extraerTexto(contenido);
+    public String getHeadHTML(){
+        StringBuilder header = new StringBuilder();
+        String path = nota.getPath();
+    
+        try {
+            Document document = Jsoup.parse(new File(path), "UTF-8");
+            Element head = document.head();
+    
+            // Obtiene el contenido dentro del head
+            header.append(head.html());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    
+        return header.toString();
     }
 }
