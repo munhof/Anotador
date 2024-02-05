@@ -6,23 +6,55 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
-import java.nio.file.*;
+import java.util.List;
 
+import org.jsoup.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 
 public class Nota {
     private File nota;
+
+
     /**
-     * @param String titulo 
-     * Recibe el titulo de una nota y la crea utilizando ese titulo como un archivo .txt
+     * @param path String
+     * genera una carpeta en la dirreccion
      */
-    public Nota(String titulo) {
-        nota = new File(titulo + ".txt");
+    public void generarCarpeta(String path){
+        Path carpeta = Paths.get(path);
+        if (!Files.exists(carpeta)) {
+            try {
+                Files.createDirectories(carpeta);
+                System.out.println("Carpeta creada correctamente.");
+            } catch (Exception e) {
+                System.out.println("Error al crear la carpeta: " + e.getMessage());
+            }
+        } else {
+            System.out.println("La carpeta ya existe.");
+        }
+    }
+
+
+    /**
+     * @param path String
+     * @param titulo String
+     * Constructor del metodo, genera una nota en path con el titulo dado
+     */
+    public Nota(String path ,String titulo) {
+        generarCarpeta(path);
+        nota = new File(path + titulo + ".html");
         try {
-            // Crear el archivo si no existe
             if (nota.createNewFile()) {
                 System.out.println("Archivo creado: " + nota.getName());
             } else {
@@ -32,6 +64,17 @@ public class Nota {
             System.out.println("Error al crear el archivo.");
             e.printStackTrace();
         }
+        crearEstructura();
+    }
+    
+    /**
+     * @param titulo
+     * @param contenido
+     * crea una Nota apartir del titulo y su contenido
+     */
+    public Nota(String path, String titulo, String contenido){
+        Nota nota = new Nota(path, titulo);
+        nota.anotar(contenido);
     }
 
 
@@ -108,48 +151,102 @@ public class Nota {
      * @param contenido 
      * Anota en la nota el contenido de input, agregandolo
      */
-    public void anotar(String contenido){
+    public void anotar(String contenido) {
         try {
-            FileWriter escritor = new FileWriter(nota.getPath(), true);
-
+            Document document = Jsoup.parse(nota, "UTF-8");
+            Element body = document.body();
+    
+            // Encuentra la cantidad de divs existentes
+            int divCount = body.select("div[id^=div_contenido_]").size();
+    
+            // Crea un nuevo div con un id único
+            Element nuevoDiv = new Element("div");
+            nuevoDiv.attr("id", "div_contenido_" + (divCount + 1));
+    
+            // Divide el contenido en líneas y agrega párrafos con saltos de línea
+            String[] lineas = contenido.split("\\n");
+            for (String linea : lineas) {
+                Element parrafo = new Element("p");
+                parrafo.text(linea);
+                nuevoDiv.appendChild(parrafo);
+                // Agrega un <br> después de cada línea, excepto la última
+                if (!linea.equals(lineas[lineas.length - 1])) {
+                    nuevoDiv.append("<br>");
+                }
+            }
+    
+            // Agrega el nuevo div al cuerpo del documento
+            body.appendChild(nuevoDiv);
+    
+            // Actualiza el contenido del archivo
+            FileWriter escritor = new FileWriter(nota.getPath(), false);
             BufferedWriter bufferEscritor = new BufferedWriter(escritor);
-
-            bufferEscritor.write(contenido);
-
-            bufferEscritor.newLine();
-
+            bufferEscritor.write(document.html());
             bufferEscritor.close();
-
-            System.out.println("Contenido escrito en el archivo correctamente.");
-
         } catch (IOException e) {
             System.out.println("Error al escribir en el archivo: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-/**
- * @return devuelve en contenido de la nota
- */
-public String getContenido() {
-    StringBuilder contenido = new StringBuilder();
-    String path = nota.getPath();
-    try (BufferedReader lector = new BufferedReader(new FileReader(path))) {
-        String linea;
-        boolean primeraLinea = true;
-        while ((linea = lector.readLine()) != null) {
-            if (primeraLinea) {
-                primeraLinea = false;
-            } else {
-                contenido.append("\n");
+    public void crearEstructura() {
+        try {
+            Document document = Jsoup.parse(nota, "UTF-8");
+
+            // Agrega la etiqueta <head> si no existe
+            Element head = document.head();
+            if (head == null) {
+                head = document.appendElement("head");
             }
-            contenido.append(linea);
+
+            // Agrega el título
+            head.appendElement("title").text("Nota: " + nota.getName());
+
+            // Agrega la etiqueta <body> si no existe
+            Element body = document.body();
+            if (body == null) {
+                body = document.appendElement("body");
+            }
+
+            // Actualiza el contenido del archivo
+            FileWriter escritor = new FileWriter(nota.getPath(), false);
+            BufferedWriter bufferEscritor = new BufferedWriter(escritor);
+            bufferEscritor.write(document.html());
+            bufferEscritor.close();
+        } catch (IOException e) {
+            System.out.println("Error al escribir en el archivo: " + e.getMessage());
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-    return contenido.toString();
-}
+    /**
+     * @return devuelve en contenido de la nota en el body
+     */
+    public String getContenidoHTML() {
+        StringBuilder contenido = new StringBuilder();
+        String path = nota.getPath();
+    
+        try {
+            Document document = Jsoup.parse(new File(path), "UTF-8");
+            Element body = document.body();
+    
+            // Obtiene el contenido dentro del body
+            contenido.append(body.html());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    
+        return contenido.toString();
+    }
 
+    public static String extraerTexto(String inputHtml) {
+        Document document = Jsoup.parseBodyFragment(inputHtml);
 
+        Element body = document.body();
+        return body.text();
+    }
+
+    public String getContenido() {
+        String contenido = getContenidoHTML();
+        return extraerTexto(contenido);
+    }
 }
