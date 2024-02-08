@@ -20,6 +20,7 @@ import org.jsoup.select.Elements;
 
 public class Nota {
     private File nota;
+    public Nota siguiente;
 
 
     /**
