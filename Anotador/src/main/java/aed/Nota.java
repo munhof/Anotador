@@ -73,6 +73,9 @@ public class Nota {
         nota.anotar(contenido);
     }
 
+    public Nota(File file) {
+        this.nota = file;
+    }
 
     /**
      * Elimina la nota
@@ -100,6 +103,19 @@ public class Nota {
         return nota;
     }
 
+     /**
+     * Devuelve la nota correspondiente al path especificado, si existe.
+     * @param path El path de la nota a obtener.
+     * @return La instancia de Nota correspondiente al path, o null si no existe.
+     */
+    public static Nota getNota(String path) {
+        File notaFile = new File(path);
+        if (notaFile.exists()) {
+            return new Nota(notaFile);
+        } else {
+            return null;
+        }
+    }
 
     /**
      * @return String pathAbsoluto de la nota si es necesario
@@ -141,6 +157,16 @@ public class Nota {
         FileTime LastModifyTime = attributes.lastModifiedTime();
         Date LastModifyDate = new Date(LastModifyTime.toMillis());
         return LastModifyDate;
+    }
+
+    public String getName() {
+        if (nota.exists()) {
+            Path path = nota.toPath();
+            String name = path.getFileName().toString();
+            return name;
+        } else {
+            return null;
+        }
     }
 
     /**

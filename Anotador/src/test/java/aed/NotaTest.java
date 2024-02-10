@@ -60,6 +60,31 @@ public class NotaTest {
     }
 
     @Test
+    void testGetNota() {
+        // Crear una instancia de Nota y obtener su path
+        String notaPath = nota.getPath();
+        
+        // Obtener la Nota utilizando el método getNota
+        Nota notaObtenida = Nota.getNota(notaPath);
+        
+        // Verificar que la Nota obtenida no sea null
+        assertNotNull(notaObtenida);
+        
+        // Verificar que el nombre de la Nota obtenida sea igual al esperado
+        assertEquals("MiTitulo.html", notaObtenida.getName());
+    }
+    
+    @Test
+    void testGetNotaNoExiste() {
+        // Intentar obtener una Nota que no existe
+        String pathInexistente = "ruta/a/una/nota/que/no/existe.html";
+        Nota notaObtenida = Nota.getNota(pathInexistente);
+        
+        // Verificar que la Nota obtenida sea null
+        assertNull(notaObtenida);
+    }
+
+    @Test
     public void testEscribirEnArchivo() {
         String contenido = "Este es un texto de prueba";
         nota.anotar(contenido);
@@ -197,6 +222,19 @@ public class NotaTest {
             salidaEsperada = salidaEsperada.substring(0, salidaEsperada.length() - 1);
         }
         assertEquals(nota.getContenidoHTML(), salidaEsperada);
+    }
+
+    @Test
+    void testGetName(){
+        String nombre = nota.getName();
+        assertEquals(nombre, "MiTitulo.html");
+    }
+
+    @Test
+    void testGetNameNotFile(){
+        nota.borrar();
+        String nombre = nota.getName();
+        assertNull(nombre);
     }
 }
 
