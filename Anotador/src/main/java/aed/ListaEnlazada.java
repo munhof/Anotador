@@ -1,11 +1,13 @@
 package aed;
 
-public class ListaEnlazada<T> implements Secuencia<T> {
+import java.io.Serializable;
+
+public class ListaEnlazada<T> implements Secuencia<T>,Serializable {
     private Nodo _primero;
     private Nodo _ultimo;
     private int _longitud;    
 
-    private class Nodo {
+    private class Nodo implements Serializable{
         T valor;
         Nodo siguiente;
         Nodo anterior;

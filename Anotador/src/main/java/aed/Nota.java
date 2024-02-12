@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 
-public class Nota {
+public class Nota implements Serializable{
     private File nota;
     public Nota siguiente;
 

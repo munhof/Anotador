@@ -1,8 +1,11 @@
 package aed;
 
 import java.util.List;
+import java.util.Objects;
+import java.io.*;
 
-public class Anotador {
+
+public class Anotador implements Serializable {
 
     TrieDict<ListaEnlazada<String>> anotador;
 
@@ -38,11 +41,58 @@ public class Anotador {
             ListaEnlazada<String> listaNotas = anotador.buscar(etiqueta);
             for (int i = 0; i < listaNotas.longitud(); i++) {
                 Nota nota = Nota.getNota(listaNotas.obtener(i));
-                if (nota.getName() == titulo) {
+                String name = nota.getName() ;
+                if (name.compareTo(titulo) == 0) {
                     return nota;
                 }
             }
         }
         return null;
+    }
+
+    public void cambiarEtiqueta(String titulo, String etiquetaNueva){
+        Nota nota;
+        String name;
+        for (String etiqueta : anotador.getKeys()) {
+            ListaEnlazada<String> listaNotas = anotador.buscar(etiqueta);
+            for (int i = 0; i < listaNotas.longitud(); i++) {
+                nota = Nota.getNota(listaNotas.obtener(i));
+                name = nota.getName() ;
+                if (name.compareTo(titulo) == 0) {
+                    listaNotas.eliminar(i);
+                    etiquetarNota(etiquetaNueva, nota);
+                }
+            }
+        }
+    }
+
+    public void guardar(String archivo) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(archivo))) {
+            out.writeObject(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Anotador cargar(String archivo) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(archivo))) {
+            return (Anotador) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Anotador other = (Anotador) obj;
+        // Aquí comparas los atributos relevantes para determinar la igualdad
+        return Objects.equals(this.anotador, other.anotador);
     }
 }

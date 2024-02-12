@@ -1,11 +1,13 @@
 package aed;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
-public class TrieDict<T> {
+public class TrieDict<T> implements Serializable {
 
-    class NodoTrie {
+    class NodoTrie implements Serializable{
         HashMap<Character, NodoTrie> children;
         T value;
 
@@ -123,5 +125,18 @@ public class TrieDict<T> {
         for (char c : nodoActual.children.keySet()) {
             copiarRecursivo(nodoActual.children.get(c), etiqueta + c, copia);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TrieDict<?> trieDict = (TrieDict<?>) o;
+        return Objects.equals(root, trieDict.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(root);
     }
 }
